@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Units{% endblock %}
+
+{% block content %}
+  <h2 class="text-xl font-semibold mb-4">Your Units</h2>
+
+  <form method="post" class="bg-white shadow-md rounded p-4 mb-6">
+    {% csrf_token %}
+    <div class="mb-4">
+      <label class="block font-medium mb-1">Unit Name</label>
+      <input type="text" name="name" class="w-full border rounded p-2" required>
+    </div>
+    <div class="mb-4">
+      <label class="block font-medium mb-1">Difficulty (1–10)</label>
+      <input type="number" name="difficulty" min="1" max="10" class="w-full border rounded p-2" required>
+    </div>
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Unit</button>
+  </form>
+
+  <ul class="bg-white shadow-md rounded divide-y">
+    {% for unit in units %}
+      <li class="p-3">{{ unit.name }} <span class="text-gray-500">(Difficulty: {{ unit.difficulty }})</span></li>
+    {% empty %}
+      <li class="p-3 text-gray-500">No units added yet.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

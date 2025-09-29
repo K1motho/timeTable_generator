@@ -35,3 +35,12 @@ class AvailabilityBlock(models.Model):
 
     def __str__(self):
         return f"{self.availability.get_day_display()} {self.block} - {self.hours} hrs"
+
+class Timetable(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # Store timetable as JSON (Django supports this natively with PostgreSQL)
+    data = models.JSONField()
+
+    def __str__(self):
+        return f"Timetable {self.id} - {self.created_at.strftime('%Y-%m-%d %H:%M')}"

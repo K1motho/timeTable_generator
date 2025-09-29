@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Availability{% endblock %}
+
+{% block content %}
+  <h2 class="text-xl font-semibold mb-4">Your Availability</h2>
+
+  <form method="post" onsubmit="return validateForm()" class="bg-white shadow-md rounded p-4 mb-6">
+    {% csrf_token %}
+    <div class="mb-4">
+      <label class="block font-medium mb-1">Day</label>
+      <select name="day" class="w-full border rounded p-2" required>
+        <option value="">-- Select Day --</option>
+        <option value="mon">Monday</option>
+        <option value="tue">Tuesday</option>
+        <option value="wed">Wednesday</option>
+        <option value="thu">Thursday</option>
+        <option value="fri">Friday</option>
+        <option value="sat">Saturday</option>
+      </select>
+    </div>
+    <div class="mb-4">
+      <label class="block font-medium mb-1">Block</label>
+      <select name="block" class="w-full border rounded p-2" required>
+        <option value="morning">Morning</option>
+        <option value="afternoon">Afternoon</option>
+        <option value="evening">Evening</option>
+      </select>
+    </div>
+    <div class="mb-4">
+      <label class="block font-medium mb-1">Hours Available</label>
+      <input type="number" name="hours" min="0" class="w-full border rounded p-2" required>
+    </div>
+    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Save</button>
+  </form>
+
+  <ul class="bg-white shadow-md rounded divide-y">
+    {% for avail in availability %}
+      <li class="p-3">
+        <strong>{{ avail.get_day_display }}</strong>:
+        {% for block in avail.blocks.all %}
+          <span class="ml-2">{{ block.block }}: {{ block.hours }} hrs</span>
+        {% endfor %}
+      </li>
+    {% empty %}
+      <li class="p-3 text-gray-500">No availability set yet.</li>
+    {% endfor %}
+  </ul>
+
+  <script>
+    function validateForm() {
+      // Example toast-like confirmation if days are skipped
+      return confirm("Are you sure you want to leave some days blank?");
+    }
+  </script>
+{% endblock %}
