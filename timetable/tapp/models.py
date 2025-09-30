@@ -1,6 +1,21 @@
 from django.db import models
 
+
+class Timetable(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # Store timetable result as JSON (works with PostgreSQL JSONField)
+    data = models.JSONField(blank=True, null=True)
+
+    def __str__(self):
+        return f"Timetable {self.id} - {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+
+
 class Unit(models.Model):
+    timetable = models.ForeignKey(
+        Timetable, related_name="units", on_delete=models.CASCADE,
+        null=True, blank=True   # 👈 allow units without timetable
+    )
     name = models.CharField(max_length=255)
     difficulty = models.PositiveSmallIntegerField(default=5)
 
@@ -9,13 +24,17 @@ class Unit(models.Model):
 
 
 class Availability(models.Model):
+    timetable = models.ForeignKey(
+        Timetable, related_name="availability", on_delete=models.CASCADE
+    )
+
     DAY_CHOICES = [
-        ('mon', 'Monday'),
-        ('tue', 'Tuesday'),
-        ('wed', 'Wednesday'),
-        ('thu', 'Thursday'),
-        ('fri', 'Friday'),
-        ('sat', 'Saturday'),
+        ("mon", "Monday"),
+        ("tue", "Tuesday"),
+        ("wed", "Wednesday"),
+        ("thu", "Thursday"),
+        ("fri", "Friday"),
+        ("sat", "Saturday"),
     ]
     day = models.CharField(max_length=3, choices=DAY_CHOICES)
 
@@ -24,23 +43,17 @@ class Availability(models.Model):
 
 
 class AvailabilityBlock(models.Model):
+    availability = models.ForeignKey(
+        Availability, related_name="blocks", on_delete=models.CASCADE
+    )
+
     BLOCK_CHOICES = [
-        ('morning', 'Morning'),
-        ('afternoon', 'Afternoon'),
-        ('evening', 'Evening'),
+        ("morning", "Morning"),
+        ("afternoon", "Afternoon"),
+        ("evening", "Evening"),
     ]
-    availability = models.ForeignKey(Availability, related_name="blocks", on_delete=models.CASCADE)
     block = models.CharField(max_length=10, choices=BLOCK_CHOICES)
     hours = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return f"{self.availability.get_day_display()} {self.block} - {self.hours} hrs"
-
-class Timetable(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    # Store timetable as JSON (Django supports this natively with PostgreSQL)
-    data = models.JSONField()
-
-    def __str__(self):
-        return f"Timetable {self.id} - {self.created_at.strftime('%Y-%m-%d %H:%M')}"
