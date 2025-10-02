@@ -2,71 +2,93 @@
 {% block title %}Availability{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto">
-  <h2 class="text-2xl font-bold text-gray-800 mb-6">🕒 Manage Your Availability</h2>
+<div class="max-w-4xl mx-auto">
+  <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">🕒 Manage Your Availability</h2>
 
   <!-- Add Availability Form -->
-  <form method="post" class="bg-white shadow-lg rounded-lg p-6 mb-8">
-    {% csrf_token %}
-    <div class="mb-5">
-      <label class="block text-gray-700 font-medium mb-2">Day</label>
-      <select name="day" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-        <option value="">-- Select Day --</option>
-        <option value="mon">Monday</option>
-        <option value="tue">Tuesday</option>
-        <option value="wed">Wednesday</option>
-        <option value="thu">Thursday</option>
-        <option value="fri">Friday</option>
-        <option value="sat">Saturday</option>
-      </select>
-    </div>
+  <div class="bg-white shadow-lg rounded-lg p-6 mb-10">
+    <h3 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">➕ Add New Availability Slot</h3>
+    <form method="post" class="space-y-5">
+      {% csrf_token %}
+      <div>
+        <label class="block text-gray-700 font-medium mb-2">Day</label>
+        <select name="day" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+          <option value="">-- Select Day --</option>
+          <option value="mon">Monday</option>
+          <option value="tue">Tuesday</option>
+          <option value="wed">Wednesday</option>
+          <option value="thu">Thursday</option>
+          <option value="fri">Friday</option>
+          <option value="sat">Saturday</option>
+          <option value="sun">Sunday</option>
+        </select>
+      </div>
 
-    <div class="mb-5">
-      <label class="block text-gray-700 font-medium mb-2">Block</label>
-      <select name="block" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-        <option value="morning">Morning</option>
-        <option value="afternoon">Afternoon</option>
-        <option value="evening">Evening</option>
-      </select>
-    </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div>
+          <label class="block text-gray-700 font-medium mb-2">Start Time</label>
+          <input type="time" name="start_time"
+                 class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+        </div>
+        <div>
+          <label class="block text-gray-700 font-medium mb-2">End Time</label>
+          <input type="time" name="end_time"
+                 class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+        </div>
+      </div>
 
-    <div class="mb-6">
-      <label class="block text-gray-700 font-medium mb-2">Hours Available</label>
-      <input type="number" name="hours" min="1"
-             class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-    </div>
+      <button type="submit"
+              class="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-green-600 to-green-700 text-white py-3 rounded-lg font-semibold shadow hover:from-green-700 hover:to-green-800 transition">
+        ➕ Save Availability
+      </button>
+    </form>
+  </div>
 
-    <button type="submit"
-            class="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-3 rounded-lg font-semibold shadow hover:from-green-700 hover:to-green-800 transition">
-      ➕ Save Availability
-    </button>
-  </form>
-
-  <!-- Availability List -->
+  <!-- Availability Table -->
   <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-    <h3 class="bg-green-600 text-white px-4 py-3 font-semibold">Your Availability</h3>
-    <ul class="divide-y divide-gray-200">
-      {% for avail in availability %}
-        <li class="p-4">
-          <strong class="text-gray-800">{{ avail.get_day_display }}</strong>:
-          {% for block in avail.blocks.all %}
-            <span class="ml-2 inline-block px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm">
-              {{ block.block }} → {{ block.hours }} hrs
-            </span>
+    <h3 class="bg-blue-600 text-white px-6 py-4 font-semibold text-lg">📌 Your Weekly Availability</h3>
+    <div class="overflow-x-auto">
+      <table class="min-w-full table-auto border-collapse">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="px-6 py-3 border text-left text-gray-700 font-semibold">Day</th>
+            <th class="px-6 py-3 border text-left text-gray-700 font-semibold">Available Slots</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for avail in availability %}
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 border font-semibold text-gray-900">{{ avail.get_day_display }}</td>
+              <td class="px-6 py-4 border">
+                {% for slot in avail.slots.all %}
+                  <div class="flex justify-between items-center bg-gray-50 border px-3 py-2 rounded-lg mb-2">
+                    <span class="inline-block px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-medium">
+                      {{ slot.start_time|time:"H:i" }} → {{ slot.end_time|time:"H:i" }}
+                    </span>
+                    <a href="{% url 'delete_availability_slot' slot.id %}"
+                       class="text-red-600 hover:underline text-sm font-medium">🗑️ Delete</a>
+                  </div>
+                {% empty %}
+                  <span class="text-gray-500 italic">No slots set</span>
+                {% endfor %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="2" class="px-6 py-4 text-center text-gray-500 italic">No availability set yet.</td>
+            </tr>
           {% endfor %}
-        </li>
-      {% empty %}
-        <li class="p-4 text-gray-500 italic">No availability set yet.</li>
-      {% endfor %}
-    </ul>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <!-- Generate Timetable button -->
   {% if availability %}
-    <div class="mt-6 text-right">
+    <div class="mt-8 text-center">
       <a href="{% url 'finalize_generate' %}"
-         class="inline-block px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow hover:bg-blue-700 transition">
-        📅 Generate Timetable
+         class="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg shadow hover:from-blue-700 hover:to-blue-800 transition">
+         📅 Generate Timetable
       </a>
     </div>
   {% endif %}
@@ -76,18 +98,12 @@
 <div id="toast-container" class="fixed top-5 right-5 space-y-3 z-50">
   {% if messages %}
     {% for message in messages %}
-      <div class="toast px-4 py-3 rounded-lg shadow-md text-white transform transition-all duration-500 translate-x-0 opacity-100
-                  {% if message.tags == 'success' %}
-                    bg-green-600
-                  {% elif message.tags == 'error' %}
-                    bg-red-600
-                  {% elif message.tags == 'warning' %}
-                    bg-yellow-500
-                  {% elif message.tags == 'info' %}
-                    bg-blue-600
-                  {% else %}
-                    bg-gray-800
-                  {% endif %}">
+      <div class="toast px-5 py-4 rounded-lg shadow-lg text-white font-medium flex items-center gap-2 transform transition-all duration-500 translate-x-0 opacity-100
+                  {% if message.tags == 'success' %} bg-green-600
+                  {% elif message.tags == 'error' %} bg-red-600
+                  {% elif message.tags == 'warning' %} bg-yellow-500
+                  {% elif message.tags == 'info' %} bg-blue-600
+                  {% else %} bg-gray-800 {% endif %}">
         {{ message }}
       </div>
     {% endfor %}

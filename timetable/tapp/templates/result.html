@@ -2,41 +2,61 @@
 {% block title %}Generated Timetable{% endblock %}
 
 {% block content %}
-  <h2 class="text-xl font-semibold mb-6">Your Timetable</h2>
 
-  <div id="timetable" class="overflow-x-auto bg-white shadow rounded">
+  <!-- Timetable Table -->
+  <div id="timetable" class="overflow-x-auto bg-white shadow-lg rounded-lg">
     <table class="table-auto w-full border-collapse">
       <thead>
-        <tr class="bg-blue-600 text-white">
-          <th class="p-3 border">Day</th>
-          <th class="p-3 border">Block</th>
-          <th class="p-3 border">Unit</th>
-          <th class="p-3 border">Start</th>
-          <th class="p-3 border">End</th>
+        <tr class="bg-gradient-to-r from-blue-600 to-blue-500 text-white text-lg">
+          <th class="p-3 border border-gray-300">Day</th>
+          <th class="p-3 border border-gray-300">Unit</th>
+          <th class="p-3 border border-gray-300">Time</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="text-sm md:text-base">
         {% for day, sessions in timetable.items %}
-          {% for unit, start, end, block in sessions %}
-            <tr class="hover:bg-gray-100">
-              <td class="p-2 border">{{ day }}</td>
-              <td class="p-2 border capitalize">{{ block }}</td>
-              <td class="p-2 border">{{ unit }}</td>
-              <td class="p-2 border">{{ start }}</td>
-              <td class="p-2 border">{{ end }}</td>
+          {% for session in sessions %}
+            <tr class="odd:bg-gray-50 even:bg-white hover:bg-blue-50 transition">
+              {% if forloop.first %}
+                <td class="p-3 border border-gray-300 text-center align-top" rowspan="{{ sessions|length }}">
+                  {{ day }}
+                </td>
+              {% endif %}
+              <td class="p-3 border border-gray-300">{{ session.unit }}</td>
+              <td class="p-3 border border-gray-300 text-center">
+                {{ session.start }} → {{ session.end }}
+              </td>
             </tr>
           {% endfor %}
         {% empty %}
-          <tr><td colspan="5" class="p-3 text-center text-gray-500">No timetable generated.</td></tr>
+          <tr>
+            <td colspan="3" class="p-3 text-center text-gray-500">No timetable generated.</td>
+          </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 
-  <div class="mt-6 space-x-4">
-    <button onclick="downloadPDF()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Download PDF</button>
-    <button onclick="downloadImage()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Download Image</button>
-    <a href="{% url 'generate' %}" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">Regenerate</a>
+  <!-- Action Buttons -->
+  <div class="mt-6 flex flex-wrap gap-4">
+    <button onclick="downloadPDF()" class="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition">
+      📥 Download PDF
+    </button>
+    <a href="{% url 'generate' %}" class="flex items-center gap-2 bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition">
+      🔄 Regenerate
+    </a>
+    <button onclick="confirmEditAvailability()" class="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+      ✏️ Edit Availability
+    </button>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="hidden fixed bottom-5 right-5 bg-gray-800 text-white px-4 py-3 rounded shadow-lg flex items-center gap-2">
+    ⚠️ Are you sure you want to edit availability?
+    <div class="flex gap-2 ml-4">
+      <button onclick="proceedEdit()" class="bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded">Yes</button>
+      <button onclick="hideToast()" class="bg-gray-500 hover:bg-gray-600 px-3 py-1 rounded">Cancel</button>
+    </div>
   </div>
 
   <script>
@@ -45,14 +65,17 @@
       html2pdf().from(element).save("timetable.pdf");
     }
 
-    function downloadImage() {
-      const element = document.getElementById("timetable");
-      html2canvas(element).then(canvas => {
-        let link = document.createElement("a");
-        link.download = "timetable.png";
-        link.href = canvas.toDataURL();
-        link.click();
-      });
+    // Toast logic
+    function confirmEditAvailability() {
+      document.getElementById("toast").classList.remove("hidden");
+    }
+
+    function hideToast() {
+      document.getElementById("toast").classList.add("hidden");
+    }
+
+    function proceedEdit() {
+      window.location.href = "{% url 'availability_list' %}";
     }
   </script>
 {% endblock %}

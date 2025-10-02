@@ -3,9 +3,7 @@ from django.db import models
 
 class Timetable(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-
-    # Store timetable result as JSON (works with PostgreSQL JSONField)
-    data = models.JSONField(blank=True, null=True)
+    data = models.JSONField(blank=True, null=True)  # Store generated timetable as JSON
 
     def __str__(self):
         return f"Timetable {self.id} - {self.created_at.strftime('%Y-%m-%d %H:%M')}"
@@ -14,7 +12,7 @@ class Timetable(models.Model):
 class Unit(models.Model):
     timetable = models.ForeignKey(
         Timetable, related_name="units", on_delete=models.CASCADE,
-        null=True, blank=True   # 👈 allow units without timetable
+        null=True, blank=True   # Allow units without a timetable initially
     )
     name = models.CharField(max_length=255)
     difficulty = models.PositiveSmallIntegerField(default=5)
@@ -25,7 +23,8 @@ class Unit(models.Model):
 
 class Availability(models.Model):
     timetable = models.ForeignKey(
-        Timetable, related_name="availability", on_delete=models.CASCADE
+        Timetable, related_name="availability", on_delete=models.CASCADE,
+        null=True, blank=True   # Allow availability records before timetable is finalized
     )
 
     DAY_CHOICES = [
@@ -35,6 +34,7 @@ class Availability(models.Model):
         ("thu", "Thursday"),
         ("fri", "Friday"),
         ("sat", "Saturday"),
+        ("sun", "Sunday"),
     ]
     day = models.CharField(max_length=3, choices=DAY_CHOICES)
 
@@ -42,18 +42,15 @@ class Availability(models.Model):
         return self.get_day_display()
 
 
-class AvailabilityBlock(models.Model):
+class AvailabilitySlot(models.Model):
     availability = models.ForeignKey(
-        Availability, related_name="blocks", on_delete=models.CASCADE
+        Availability, related_name="slots", on_delete=models.CASCADE
     )
-
-    BLOCK_CHOICES = [
-        ("morning", "Morning"),
-        ("afternoon", "Afternoon"),
-        ("evening", "Evening"),
-    ]
-    block = models.CharField(max_length=10, choices=BLOCK_CHOICES)
-    hours = models.PositiveIntegerField(default=0)
+    start_time = models.TimeField(null=True, blank=True)
+    end_time = models.TimeField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.availability.get_day_display()} {self.block} - {self.hours} hrs"
+        return (
+            f"{self.availability.get_day_display()} "
+            f"{self.start_time or '...'} - {self.end_time or '...'}"
+        )

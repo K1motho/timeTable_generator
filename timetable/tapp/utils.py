@@ -1,79 +1,99 @@
 import random
 from datetime import datetime, timedelta
-from .models import Unit, Availability, AvailabilityBlock
-
-# Define study blocks (fixed start times)
-BLOCKS = {
-    "morning": datetime.strptime("08:00", "%H:%M"),
-    "afternoon": datetime.strptime("13:00", "%H:%M"),
-    "evening": datetime.strptime("18:00", "%H:%M"),
-}
+from .models import Unit, Availability, AvailabilitySlot
 
 
 def generate_timetable():
     """
-    Generate a timetable directly from ORM objects (Unit + AvailabilityBlock).
+    Generate a timetable from Unit + AvailabilitySlot.
     Returns a dict like:
     {
         "mon": [
-            ("Math", 08:00, 10:00, "morning"),
-            ("History", 13:00, 14:00, "afternoon")
+            {"unit": "Math", "start": "10:00", "end": "11:30"},
+            {"unit": "History", "start": "16:00", "end": "17:00"}
         ],
         "tue": [...]
     }
     """
 
     units = Unit.objects.all()
-    availabilities = Availability.objects.prefetch_related("blocks")
+    availabilities = Availability.objects.prefetch_related("slots")
 
     if not units or not availabilities:
-        return None  # Caller should handle error case
+        return None
 
-    # --- Normalize unit difficulties ---
+    # --- Normalize difficulty weights ---
     total_difficulty = sum(u.difficulty for u in units)
-    total_hours = sum(
-        sum(block.hours for block in a.blocks.all()) for a in availabilities
-    )
+    if total_difficulty == 0:
+        return None
 
+    # --- Count total available hours ---
+    total_hours = 0
+    slots_by_day = {}
+    for a in availabilities:
+        slots_by_day[a.day] = []
+        for slot in a.slots.all():
+            if slot.start_time and slot.end_time:
+                diff = (
+                    datetime.combine(datetime.today(), slot.end_time)
+                    - datetime.combine(datetime.today(), slot.start_time)
+                ).seconds // 3600
+                if diff > 0:
+                    total_hours += diff
+                    slots_by_day[a.day].append(
+                        {
+                            "start": slot.start_time,
+                            "end": slot.end_time,
+                            "hours": diff,
+                        }
+                    )
+
+    if total_hours == 0:
+        return None
+
+    # --- Allocate weekly hours per unit (respect difficulty) ---
     allocations = {
         u.name: max(1, int((u.difficulty / total_difficulty) * total_hours))
         for u in units
     }
 
-    timetable = {a.day: [] for a in availabilities}
+    # --- Timetable structure ---
+    timetable = {day: [] for day in slots_by_day.keys()}
 
-    # --- Assign units per day and per block ---
-    for a in availabilities:
-        for block in a.blocks.all():
-            if block.hours <= 0:
-                continue
+    # --- Assign sessions into slots ---
+    # We iterate day by day, slot by slot, and fill units
+    for day, slots in slots_by_day.items():
+        for slot in slots:
+            start_time = datetime.combine(datetime.today(), slot["start"])
+            end_time = datetime.combine(datetime.today(), slot["end"])
+            available_hours = slot["hours"]
 
-            start_time = BLOCKS[block.block]
-            daily_allocated = 0
+            # While slot has hours and there are units needing time
+            while available_hours > 0 and any(v > 0 for v in allocations.values()):
+                # Pick a unit that still has hours left
+                # Sort by remaining hours (so harder units get priority)
+                unit = max(allocations, key=lambda k: allocations[k])
 
-            # Shuffle units for variety
-            units_today = random.sample(list(allocations.keys()), len(allocations))
+                if allocations[unit] <= 0:
+                    break
 
-            for unit in units_today:
-                if allocations[unit] <= 0 or daily_allocated >= block.hours:
-                    continue
+                # Allocate the smaller of remaining hours and slot capacity
+                slot_hours = min(allocations[unit], available_hours)
 
-                # Allocate 1–2 hours at a time
-                slot_hours = min(
-                    random.randint(1, 2),
-                    allocations[unit],
-                    block.hours - daily_allocated,
+                unit_end = start_time + timedelta(hours=slot_hours)
+
+                timetable[day].append(
+                    {
+                        "unit": unit,
+                        "start": start_time.strftime("%H:%M"),
+                        "end": unit_end.strftime("%H:%M"),
+                    }
                 )
 
-                end_time = start_time + timedelta(hours=slot_hours)
-
-                timetable[a.day].append(
-                    (unit, start_time.time(), end_time.time(), block.block)
-                )
-
+                # Deduct
                 allocations[unit] -= slot_hours
-                daily_allocated += slot_hours
-                start_time = end_time
+                available_hours -= slot_hours
+                start_time = unit_end
 
     return timetable
 
@@ -85,10 +105,17 @@ def generate_reminders(timetable, reminder_offset=15):
     """
     reminders = []
     for day, sessions in timetable.items():
-        for unit, start, _, block in sessions:
+        for session in sessions:
+            unit = session["unit"]
+            start = session["start"]  # "HH:MM"
+
+            # Convert back into datetime for reminder
             now = datetime.now()
             session_start = now.replace(
-                hour=start.hour, minute=start.minute, second=0, microsecond=0
+                hour=int(start.split(":")[0]),
+                minute=int(start.split(":")[1]),
+                second=0,
+                microsecond=0,
             )
             reminder_time = session_start - timedelta(minutes=reminder_offset)
 
@@ -96,8 +123,7 @@ def generate_reminders(timetable, reminder_offset=15):
                 {
                     "unit": unit,
                     "day": day,
-                    "block": block,
-                    "reminder_time": reminder_time,
+                    "reminder_time": reminder_time.strftime("%Y-%m-%d %H:%M"),
                 }
             )
     return reminders

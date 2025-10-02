@@ -1,66 +1,96 @@
 {% extends "base.html" %}
-
 {% block title %}Home{% endblock %}
 
 {% block content %}
 <h2 class="text-2xl font-semibold mb-6">Good {{ greeting }}, today is {{ day }} </h2>
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-  
-  <!-- Only show this card if timetable exists -->
   {% if has_timetable %}
+  <!-- Existing Timetable Card -->
   <div class="bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transition">
     <h3 class="text-lg font-bold mb-2">View Existing Timetable</h3>
     <p class="text-gray-600 mb-4">See your saved timetable with your latest preferences.</p>
-    <a href="{% url 'generate' %}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-      View Timetable
-    </a>
+    <a href="{% url 'generate' %}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">View Timetable</a>
   </div>
   {% endif %}
 
-  <!-- Always visible: Generate New Timetable -->
-  <div x-data="{ showToast: false }" class="bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transition">
+  <!-- Generate Timetable Card -->
+  <div id="generateCard" 
+       data-has-timetable="{{ has_timetable|yesno:'true,false' }}"
+       class="bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transition">
+
     <h3 class="text-lg font-bold mb-2">Generate a New Timetable</h3>
     <p class="text-gray-600 mb-4">Create a fresh timetable based on your units and availability.</p>
-    
-    {% if has_timetable %}
-      <!-- If timetable exists, show toast instead -->
-      <button @click="showToast = true" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-        Generate
-      </button>
 
-      <!-- Toast Modal -->
-      <div x-show="showToast" 
-           class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50"
-           x-cloak>
-        <div class="bg-white p-6 rounded-lg shadow-lg max-w-md text-center">
-          <h3 class="text-lg font-bold mb-4">Timetable Already Exists</h3>
-          <p class="text-gray-600 mb-6">
-            You already have a saved timetable. What would you like to do?
-          </p>
-          <div class="flex flex-col space-y-3">
-            <a href="{% url 'download_timetable' %}?next=generate" 
-               class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-              Download & Generate New
-            </a>
-            <a href="{% url 'generate' %}?force=new" 
-               class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-              Generate Without Download
-            </a>
-            <a href="{% url 'generate' %}" 
-               class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
-              Cancel & View Existing
-            </a>
-          </div>
-          <button @click="showToast = false" class="mt-4 text-sm text-gray-400 hover:text-gray-600">Close</button>
+    <button id="generateBtn" 
+            class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+      Generate
+    </button>
+
+    <!-- Modal (hidden by default) -->
+    <div id="generateModal" 
+         class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white p-6 rounded-lg shadow-lg max-w-md text-center">
+        <h3 class="text-lg font-bold mb-4">Timetable Already Exists</h3>
+        <p class="text-gray-600 mb-6">
+          You already have a saved timetable. What would you like to do?
+        </p>
+
+        <div class="flex flex-col space-y-3">
+          <a href="{% url 'download_timetable' %}" 
+             class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            Download & Generate New
+          </a>
+          <a href="{% url 'unit_list' %}?force=new" 
+             class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+            Generate Without Download
+          </a>
+          <a href="{% url 'generate' %}" 
+             class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+            Cancel & View Existing
+          </a>
         </div>
+
+        <button id="closeModal" 
+                class="mt-4 text-sm text-gray-400 hover:text-gray-600">
+          Close
+        </button>
       </div>
-    {% else %}
-      <!-- If no timetable, go straight to generate -->
-      <a href="{% url 'generate' %}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-        Generate
-      </a>
-    {% endif %}
+    </div>
   </div>
 </div>
+
+<!-- Script for modal logic -->
+<script>
+  (function() {
+    const card = document.getElementById('generateCard');
+    const btn = document.getElementById('generateBtn');
+    const modal = document.getElementById('generateModal');
+    const close = document.getElementById('closeModal');
+
+    // Get boolean from Django template (true/false)
+    const hasTimetable = card.dataset.hasTimetable === 'true';
+
+    // Show modal only if timetable exists, else redirect
+    btn.addEventListener('click', function() {
+      if (hasTimetable) {
+        modal.classList.remove('hidden');
+      } else {
+        window.location.href = '{% url "generate" %}';
+      }
+    });
+
+    // Close modal when clicking "Close"
+    close.addEventListener('click', function() {
+      modal.classList.add('hidden');
+    });
+
+    // Close modal when clicking on backdrop
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) {
+        modal.classList.add('hidden');
+      }
+    });
+  })();
+</script>
 {% endblock %}
