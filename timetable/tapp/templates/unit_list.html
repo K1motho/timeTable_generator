@@ -3,48 +3,48 @@
 
 {% block content %}
 <div class="max-w-2xl mx-auto">
-  <h2 class="text-2xl font-bold text-gray-800 mb-6">📘 Manage Your Units</h2>
+  <h2 class="text-3xl font-bold text-black mb-6 text-center"> Manage Your Units</h2>
 
   <!-- Add Unit Form -->
-  <form method="post" class="bg-white shadow-lg rounded-lg p-6 mb-8">
+  <form method="post" class="bg-[#f2e4d7] shadow-lg rounded-lg p-6 mb-8">
     {% csrf_token %}
     <div class="mb-5">
-      <label class="block text-gray-700 font-medium mb-2">Unit Name</label>
+      <label class="block text-black font-medium mb-2">Unit Name</label>
       <input type="text" name="name" placeholder="e.g. Calculus I"
-             class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+             class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#faa151]"
              required>
     </div>
 
     <div class="mb-6">
-      <label class="block text-gray-700 font-medium mb-2">Difficulty</label>
+      <label class="block text-black font-medium mb-2">Difficulty</label>
       <input type="range" name="difficulty" min="1" max="10" value="5"
-             class="w-full accent-blue-600"
+             class="w-full accent-[#faa151]"
              oninput="this.nextElementSibling.value = this.value">
-      <output class="block text-sm text-gray-600 mt-1">5</output>
-      <p class="text-xs text-gray-400">Slide from 1 (Easy) → 10 (Hard)</p>
+      <output class="block text-sm text-black mt-1">5</output>
+      <p class="text-xs text-gray-600">Slide from 1 (Easy) → 10 (Hard)</p>
     </div>
 
     <button type="submit"
-            class="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-lg font-semibold shadow hover:from-blue-700 hover:to-blue-800 transition">
+            class="w-full bg-[#faa151] hover:bg-[#e08d3f] text-black py-3 rounded-lg font-semibold shadow transition">
       ➕ Add Unit
     </button>
   </form>
 
   <!-- Units List -->
-  <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-    <h3 class="bg-blue-600 text-white px-4 py-3 font-semibold">Your Units</h3>
-    <ul class="divide-y divide-gray-200">
+  <div class="bg-[#f2e4d7] shadow-lg rounded-lg overflow-hidden">
+    <h3 class="bg-[#1a2b49] text-white px-4 py-3 font-semibold">Your Units</h3>
+    <ul class="divide-y divide-gray-300">
       {% for unit in units %}
-        <li class="p-4 flex justify-between items-center hover:bg-gray-50 transition">
+        <li class="p-4 flex justify-between items-center hover:bg-[#82cfc5]/30 transition">
           <div>
-            <span class="font-medium text-gray-800">{{ unit.name }}</span>
+            <span class="font-medium text-black">{{ unit.name }}</span>
             <span class="ml-3 text-sm px-3 py-1 rounded-full 
                        {% if unit.difficulty < 4 %}
-                          bg-green-100 text-green-700
+                          bg-green-200 text-green-800
                        {% elif unit.difficulty < 7 %}
-                          bg-yellow-100 text-yellow-700
+                          bg-yellow-200 text-yellow-800
                        {% else %}
-                          bg-red-100 text-red-700
+                          bg-red-200 text-red-800
                        {% endif %}">
               Difficulty: {{ unit.difficulty }}
             </span>
@@ -52,12 +52,12 @@
 
           <!-- Delete button -->
           <a href="{% url 'delete_unit' unit.id %}"
-             class="px-3 py-1 rounded-md bg-red-100 text-red-700 font-semibold hover:bg-red-200 hover:text-red-800 transition">
+             class="px-3 py-1 rounded-md bg-[#ff99a7] text-black font-semibold hover:bg-[#e68895] transition">
             ✖ Delete
           </a>
         </li>
       {% empty %}
-        <li class="p-4 text-gray-500 italic">No units added yet.</li>
+        <li class="p-4 text-gray-600 italic">No units added yet.</li>
       {% endfor %}
     </ul>
   </div>
@@ -66,7 +66,7 @@
   {% if units %}
     <div class="mt-6 text-right">
       <a href="{% url 'availability_list' %}"
-         class="inline-block px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow hover:bg-green-700 transition">
+         class="inline-block px-6 py-3 bg-[#faa151] text-black font-semibold rounded-lg shadow hover:bg-[#e08d3f] transition">
         ➡ Next: Add Availability
       </a>
     </div>
@@ -85,7 +85,7 @@
                   {% elif message.tags == 'warning' %}
                     bg-yellow-500
                   {% elif message.tags == 'info' %}
-                    bg-blue-600
+                    bg-[#1a2b49]
                   {% else %}
                     bg-gray-800
                   {% endif %}">
@@ -102,6 +102,6 @@
       toast.classList.add("opacity-0", "translate-x-10");
       setTimeout(() => toast.remove(), 500);
     });
-  }, 3000); // hides after 3s
+  }, 3000);
 </script>
 {% endblock %}

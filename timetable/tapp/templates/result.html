@@ -4,10 +4,10 @@
 {% block content %}
 
   <!-- Timetable Table -->
-  <div id="timetable" class="overflow-x-auto bg-white shadow-lg rounded-lg">
+  <div id="timetable" class="overflow-x-auto bg-[#f2e4d7] shadow-lg rounded-lg">
     <table class="table-auto w-full border-collapse">
       <thead>
-        <tr class="bg-gradient-to-r from-blue-600 to-blue-500 text-white text-lg">
+        <tr class="bg-[#1a2b49] text-white text-lg">
           <th class="p-3 border border-gray-300">Day</th>
           <th class="p-3 border border-gray-300">Unit</th>
           <th class="p-3 border border-gray-300">Time</th>
@@ -16,21 +16,21 @@
       <tbody class="text-sm md:text-base">
         {% for day, sessions in timetable.items %}
           {% for session in sessions %}
-            <tr class="odd:bg-gray-50 even:bg-white hover:bg-blue-50 transition">
+            <tr class="odd:bg-[#82cfc5]/20 even:bg-[#f2e4d7] hover:bg-[#82cfc5]/40 transition">
               {% if forloop.first %}
-                <td class="p-3 border border-gray-300 text-center align-top" rowspan="{{ sessions|length }}">
+                <td class="p-3 border border-gray-300 text-center align-top font-semibold text-black" rowspan="{{ sessions|length }}">
                   {{ day }}
                 </td>
               {% endif %}
-              <td class="p-3 border border-gray-300">{{ session.unit }}</td>
-              <td class="p-3 border border-gray-300 text-center">
+              <td class="p-3 border border-gray-300 text-black">{{ session.unit }}</td>
+              <td class="p-3 border border-gray-300 text-center text-black">
                 {{ session.start }} → {{ session.end }}
               </td>
             </tr>
           {% endfor %}
         {% empty %}
           <tr>
-            <td colspan="3" class="p-3 text-center text-gray-500">No timetable generated.</td>
+            <td colspan="3" class="p-3 text-center text-gray-600 italic">No timetable generated.</td>
           </tr>
         {% endfor %}
       </tbody>
@@ -39,23 +39,23 @@
 
   <!-- Action Buttons -->
   <div class="mt-6 flex flex-wrap gap-4">
-    <button onclick="downloadPDF()" class="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition">
+    <button onclick="downloadPDF()" class="flex items-center gap-2 bg-[#ff99a7] text-black px-4 py-2 rounded-lg font-semibold shadow hover:bg-[#e68895] transition">
       📥 Download PDF
     </button>
-    <a href="{% url 'generate' %}" class="flex items-center gap-2 bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition">
+    <a href="{% url 'generate' %}" class="flex items-center gap-2 bg-[#faa151] text-black px-4 py-2 rounded-lg font-semibold shadow hover:bg-[#e08d3f] transition">
       🔄 Regenerate
     </a>
-    <button onclick="confirmEditAvailability()" class="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+    <button onclick="confirmEditAvailability()" class="flex items-center gap-2 bg-[#1a2b49] text-white px-4 py-2 rounded-lg font-semibold shadow hover:bg-[#16233d] transition">
       ✏️ Edit Availability
     </button>
   </div>
 
   <!-- Toast Notification -->
-  <div id="toast" class="hidden fixed bottom-5 right-5 bg-gray-800 text-white px-4 py-3 rounded shadow-lg flex items-center gap-2">
+  <div id="toast" class="hidden fixed bottom-5 right-5 bg-[#1a2b49] text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2">
     ⚠️ Are you sure you want to edit availability?
     <div class="flex gap-2 ml-4">
-      <button onclick="proceedEdit()" class="bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded">Yes</button>
-      <button onclick="hideToast()" class="bg-gray-500 hover:bg-gray-600 px-3 py-1 rounded">Cancel</button>
+      <button onclick="proceedEdit()" class="bg-[#faa151] hover:bg-[#e08d3f] text-black px-3 py-1 rounded font-semibold">Yes</button>
+      <button onclick="hideToast()" class="bg-[#ff99a7] hover:bg-[#e68895] text-black px-3 py-1 rounded font-semibold">Cancel</button>
     </div>
   </div>
 

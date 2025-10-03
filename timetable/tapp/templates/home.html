@@ -2,62 +2,67 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<h2 class="text-2xl font-semibold mb-6">Good {{ greeting }}, today is {{ day }} </h2>
+<h2 class="text-2xl font-semibold mb-6 " >
+  Good {{ greeting }}, today is {{ day }}
+</h2>
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 ">
   {% if has_timetable %}
   <!-- Existing Timetable Card -->
-  <div class="bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transition">
-    <h3 class="text-lg font-bold mb-2">View Existing Timetable</h3>
-    <p class="text-gray-600 mb-4">See your saved timetable with your latest preferences.</p>
-    <a href="{% url 'generate' %}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">View Timetable</a>
+  <div class="bg-[#f2e4d7] shadow-lg rounded-lg p-6 hover:shadow-xl transition">
+    <h3 class="text-lg font-bold mb-2 text-[#1a2b49]">View Existing Timetable</h3>
+    <p class="text-black mb-4">See your saved timetable with your latest preferences.</p>
+    <a href="{% url 'generate' %}"
+       class="bg-[#faa151] text-black font-medium px-4 py-2 rounded hover:opacity-90 transition">
+      View Timetable
+    </a>
   </div>
   {% endif %}
 
   <!-- Generate Timetable Card -->
   <div id="generateCard" 
        data-has-timetable="{{ has_timetable|yesno:'true,false' }}"
-       class="bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transition">
+       class="bg-[#f2e4d7] shadow-lg rounded-lg p-6 hover:shadow-xl transition">
 
-    <h3 class="text-lg font-bold mb-2">Generate a New Timetable</h3>
-    <p class="text-gray-600 mb-4">Create a fresh timetable based on your units and availability.</p>
+    <h3 class="text-lg font-bold mb-2 text-[#1a2b49]">Generate a New Timetable</h3>
+    <p class="text-black mb-4">Create a fresh timetable based on your units and availability.</p>
 
     <button id="generateBtn" 
-            class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+            class="bg-[#faa151] text-black font-medium px-4 py-2 rounded hover:opacity-90 transition">
       Generate
     </button>
 
     <!-- Modal (hidden by default) -->
     <div id="generateModal" 
-         class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white p-6 rounded-lg shadow-lg max-w-md text-center">
-        <h3 class="text-lg font-bold mb-4">Timetable Already Exists</h3>
-        <p class="text-gray-600 mb-6">
+         class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-[#f2e4d7] p-6 rounded-lg shadow-lg max-w-md text-center">
+        <h3 class="text-lg font-bold mb-4 text-[#1a2b49]">Timetable Already Exists</h3>
+        <p class="text-black mb-6">
           You already have a saved timetable. What would you like to do?
         </p>
 
         <div class="flex flex-col space-y-3">
           <!-- Download then generate new -->
           <a href="{% url 'proceed_generate' 'download_new' %}" 
-             class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+             class="bg-[#faa151] text-black font-medium px-4 py-2 rounded hover:opacity-90 transition">
             Download & Generate New
           </a>
 
           <!-- Generate fresh without download -->
           <a href="{% url 'proceed_generate' 'new_only' %}" 
-             class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+             class="bg-[#faa151] text-black font-medium px-4 py-2 rounded hover:opacity-90 transition">
             Generate Without Download
           </a>
 
           <!-- Cancel and view existing -->
           <a href="{% url 'proceed_generate' 'cancel' %}" 
-             class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+             class="bg-[#ff99a7] text-black font-medium px-4 py-2 rounded hover:opacity-90 transition">
             Cancel & View Existing
           </a>
         </div>
 
         <button id="closeModal" 
-                class="mt-4 text-sm text-gray-400 hover:text-gray-600">
+                class="mt-4 text-sm text-gray-600 hover:text-black">
           Close
         </button>
       </div>
