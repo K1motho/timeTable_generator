@@ -16,6 +16,7 @@ urlpatterns = [
     path("generate/", views.generate, name="generate"),
     path("generate/proceed/<str:option>/", views.proceed_generate, name="proceed_generate"),
     path("generate/finalize/", views.finalize_generate, name="finalize_generate"),
+    path("proceed/<str:option>/", views.proceed_generate, name="proceed_generate"),
 
     #-- download timetable --
     path("download/", views.download_timetable, name="download_timetable"),

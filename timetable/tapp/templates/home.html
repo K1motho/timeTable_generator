@@ -37,15 +37,20 @@
         </p>
 
         <div class="flex flex-col space-y-3">
-          <a href="{% url 'download_timetable' %}" 
+          <!-- Download then generate new -->
+          <a href="{% url 'proceed_generate' 'download_new' %}" 
              class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
             Download & Generate New
           </a>
-          <a href="{% url 'unit_list' %}?force=new" 
+
+          <!-- Generate fresh without download -->
+          <a href="{% url 'proceed_generate' 'new_only' %}" 
              class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
             Generate Without Download
           </a>
-          <a href="{% url 'generate' %}" 
+
+          <!-- Cancel and view existing -->
+          <a href="{% url 'proceed_generate' 'cancel' %}" 
              class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
             Cancel & View Existing
           </a>

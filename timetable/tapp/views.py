@@ -129,7 +129,11 @@ def proceed_generate(request, option):
     if option == "cancel":
         if timetable:
             messages.info(request, "ℹ️ Using your existing timetable.")
-            return render(request, "result.html", {"timetable": timetable.data, "timetable_id": timetable.id})
+            return render(
+                request,
+                "result.html",
+                {"timetable": timetable.data, "timetable_id": timetable.id},
+            )
         messages.warning(request, "⚠️ No timetable to cancel. Redirecting home.")
         return redirect("home")
 
